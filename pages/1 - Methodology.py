@@ -5,7 +5,7 @@ from functions.functions import get_RGB_channels
 
 st.set_page_config(page_title="CMSC 190 - Part 1", layout="wide")
 
-research_paper = "A color image encryption scheme utilizing a logistic-sine chaotic map and cellular automata"
+research_paper = "A Color Image Encryption Scheme Utilizing a Logistic-Sine Chaotic Map and Cellular Automata"
 
 st.title(research_paper)
 st.write('By: Shiji Sun, Wenzhong Yang, Yabo Yin, Xiaodan Tian, Guanghan Li, Xiangxin Deng')
