@@ -3,7 +3,10 @@ import skimage as ski
 import ChannelSplitFunc
 import RowColumnTransformFunc
 
-st.set_page_config(page_title="CMSC 190 - Part 1", layout="wide")
+st.set_page_config(page_title="CMSC 190", layout="wide")
+with st.sidebar:
+  st.title("`CMSC 190 Notebook`")
+  st.write("A.J.N.T")
 
 research_paper = "A Color Image Encryption Scheme Utilizing a Logistic-Sine Chaotic Map and Cellular Automata"
 
