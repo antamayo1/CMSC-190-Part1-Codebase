@@ -3,4 +3,4 @@ fastReruns = true
 
 [theme]
 
-base = light
+base = 'dark'

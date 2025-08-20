@@ -1,4 +1,4 @@
-streamlit==1.46.0
+streamlit==1.48.1
 streamlit_pdf_viewer==0.0.26
-numpy==1.26.4
-scikit-image
+numpy==2.3.2
+scikit-image==0.25.2
