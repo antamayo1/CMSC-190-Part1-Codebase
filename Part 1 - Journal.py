@@ -86,7 +86,7 @@ with st.container(border=True):
 
       $x_{n+1} = r \\times x_n \\times (1 - x_n)$
 
-      where $r$ is the **control parameter**, $r\in(0, 4]$ the sequence is in chaotic state only when $3.569945627 < r \leq 4$, the sequence
+      where $r$ is the **control parameter**, $r\\in(0, 4]$ the sequence is in chaotic state only when $3.569945627 < r \\leq 4$, the sequence
       $x_n$ is in chaotic state.
     > As $r$ starts from and increases, it oscillates from 2 values, then 4 values, then 8 values, and so on, following a
       pattern of doubling for which they call **Period Doubling Bifurcation**. When $r$ reaches more than $3.569945627$, the sequence
@@ -94,7 +94,7 @@ with st.container(border=True):
       considers the system to be in a chaotic state.
     * **Sine Chaotic Map** is a nonlinear dynamical system model based on sinusoidal functions, and the expression of Sine Chaotic map is
 
-      $x_{i+1} = \\frac{a}{4} \\times \sin(\pi \\times x_i)$
+      $x_{i+1} = \\frac{a}{4} \\times \\sin(\\pi \\times x_i)$
 
       where $a$ is the **control parameter** which is typically 4.
     ''')
