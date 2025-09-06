@@ -55,22 +55,69 @@ class RowColumnTransform:
     return red, green, blue
   
   @staticmethod
+  def reverseStepOne(red, green, blue):
+    size = red.shape[0]
+
+    for col in range(1, size):
+      if col%2 == 1:
+        green[:, col] = 255 - green[:, col]
+
+    for row in range(1, size):
+      if row%2 == 1:
+        red[row, :] = 255 - red[row, :]
+
+    for col in range(1, size):
+      if (col-1)%3 == 0:
+        blue[:, col] = 255 - blue[:, col]
+
+    return red, green, blue
+
+  @staticmethod
   def stepTwo(red, green, blue):
     size = red.shape[0]
 
     # The R and G are switched in every column
     for col in range(1, size):
-      red[:, col], green[:, col] = green[:, col], red[:, col]
+      tmp = red[:, col].copy()
+      red[:, col] = green[:, col]
+      green[:, col] = tmp
 
     # The R and B channels are switched in every third column
     for col in range(1, size):
       if (col-1)%3 == 0:
-        red[:, col], blue[:, col] = blue[:, col], red[:, col]
+        tmp = red[:, col].copy()
+        red[:, col] = blue[:, col]
+        blue[:, col] = tmp
 
     # The G and B channels are switched in every fifth column
     for col in range(1, size):
       if (col-1)%5 == 0:
-        green[:, col], blue[:, col] = blue[:, col], green[:, col]
+        tmp = green[:, col].copy()
+        green[:, col] = blue[:, col]
+        blue[:, col] = tmp
+
+    return red, green, blue
+
+  @staticmethod
+  def reverseStepTwo(red, green, blue):
+    size = red.shape[0]
+    # Reverse order for proper undoing
+    for col in range(size-1, 0, -1):
+      if (col-1)%5 == 0:
+        tmp = green[:, col].copy()
+        green[:, col] = blue[:, col]
+        blue[:, col] = tmp
+
+    for col in range(size-1, 0, -1):
+      if (col-1)%3 == 0:
+        tmp = red[:, col].copy()
+        red[:, col] = blue[:, col]
+        blue[:, col] = tmp
+
+    for col in range(size-1, 0, -1):
+      tmp = red[:, col].copy()
+      red[:, col] = green[:, col]
+      green[:, col] = tmp
 
     return red, green, blue
 
@@ -100,25 +147,94 @@ class RowColumnTransform:
 
     return red, green, blue
 
+  @staticmethod
+  def reverseStepFour(red, green, blue):
+    size = red.shape[0]
+
+    for row in range(size):
+      red[row, :] = np.roll(red[row, :], -row)
+
+    for row in range(0, size, 3):
+      blue[row, :] = np.roll(blue[row, :], -row)
+
+    for row in range(0, size, 5):
+      green[row, :] = np.roll(green[row, :], -row)
+
+    return red, green, blue
 class ChaoticSequence:
 
-  def getNext(lastValue):
+  def XOR_images(imageA, imageB):
+    return np.bitwise_xor(imageA, imageB)
+
+  def getNext_LCM(lastValue):
     r = 4
     return r * lastValue * (1 - lastValue)
 
-  def getChaoticImage(size):
+  def getNext_SCM(lastValue):
+    r = 4
+    return r/4*np.sin(np.pi * lastValue)
+  
+  def get_Next_LSCM(lastValue):
+    r = 4
+    b = 4
+    return np.sin(r*np.pi*(1-lastValue)*b*lastValue)
+
+  def getSequenceAsImage(sequence, size):
     chaoticImage = np.zeros((size, size, 3))
-    chaoticImage[0, 0, 0] = 4
+    idx = 0
     for i in range(3):
       for row in range(0, size):
         for col in range(0, size):
-          chaoticImage[row, col, i] = ChaoticSequence.getNext(chaoticImage[row, col, i])
+          chaoticImage[row, col, i] = sequence[idx]
+          idx += 1
+    chaoticImage = (chaoticImage*255).astype(np.uint8)
     return chaoticImage
 
-  def getSequence(length):
+  def getChaoticImage(map_type, length, size):
     sequence = []
-    lastValue = 0.4
+    initial_r_value = 0.4
     for _ in range(length):
-      lastValue = ChaoticSequence.getNext(lastValue)
-      sequence.append(lastValue)
-    return sequence
+      if map_type == "LCM":
+        initial_r_value = ChaoticSequence.getNext_LCM(initial_r_value)
+      elif map_type == "SCM":
+        initial_r_value = ChaoticSequence.getNext_SCM(initial_r_value)
+      else:
+        initial_r_value = ChaoticSequence.get_Next_LSCM(initial_r_value)
+      sequence.append(initial_r_value)
+    return ChaoticSequence.getSequenceAsImage(sequence, size)
+  
+class CellularAutomata:
+  def applyXOR(pixel):
+    new_pixel = pixel
+    new_pixel = list(new_pixel)
+    for idx in range(4):
+      if pixel[idx] == pixel[(idx+1)]:
+        new_pixel[idx] = '0'
+      else:
+        new_pixel[idx] = '1'
+    return ''.join(new_pixel)
+
+  def applyinvert(pixel):
+    new_pixel = pixel
+    new_pixel = list(new_pixel)
+    for idx in range(4, 8):
+      new_pixel[idx] = str(1 - int(pixel[idx]))
+    return ''.join(new_pixel)
+
+  def applyCATransform(pixel):
+    
+    old_pixel = pixel
+    for idx in range(4):
+      XOR_pixel = CellularAutomata.applyXOR(old_pixel)
+      inverted_pixel = CellularAutomata.applyinvert(old_pixel)
+      old_pixel = XOR_pixel[:4] + inverted_pixel[4:]
+    return int(old_pixel, 2)
+
+  def generateCAImage(image):
+    orig = image.copy()
+    for row in range(image.shape[0]):
+      for col in range(image.shape[1]):
+        for channel in range(image.shape[2]):
+          binary_pixel = np.binary_repr(image[row, col, channel], width=8)
+          image[row, col, channel] = CellularAutomata.applyCATransform(binary_pixel)
+    return image
