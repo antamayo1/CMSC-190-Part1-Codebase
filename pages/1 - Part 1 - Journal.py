@@ -55,6 +55,24 @@ with st.container(border=True):
     > None. Will try adding some details there soon.
     ''')
 
+  st.subheader('September 8 2025, Monday', anchor=False)
+  with st.expander("View Details"):
+    st.markdown('''
+    Long overdue update. Finished implementing the encyption algorihm (from my understanding of the paper) and have started reviewing the results and discussions section of the paper.
+    The histogram test does not seem to match the expected result but at least the original image and decrypted image have the same histogram. Reviewing the next test in the paper which is the correlation test with the following equations:
+
+    * $$r_{x,y}=\\frac{cov(x,y)}{\\sqrt{D(x)}\\sqrt{D(y)}}$$
+    * $$cot(x,y)=\\frac{1}{N}\sum_{i=1}(x_i-E(x))(y_i-E(y))$$
+    * $$D(x)=\\frac{1}{N}\\sum_{i=1}^N (x_i-E(x))^2$$
+    * $$E(x)=\\frac{1}{N}\\sum_{i=1}^N x_i$$
+
+    I don't even know if $$cov(x,y)$$ is the same as $$cot(x,y)$$ in the paper. For what I remember from the equations, $$E(x)$$ is the mean, $$D(x)$$ is the variance. How do I implement all of these in the context of an image where the paper mentions about neighboring pixels?
+                
+    **GDOCS UPDATE**:
+    > Finally added the encryption and decryption results.
+    > I have also added the link to the notebook used for the implementation.
+    ''')
+
 with st.container(border=True):
   st.header('Notes')
 
