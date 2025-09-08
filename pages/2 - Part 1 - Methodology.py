@@ -5,8 +5,12 @@ from ProjectFunctions import ColorSplit
 from ProjectFunctions import RowColumnTransform
 from ProjectFunctions import ChaoticSequence
 from ProjectFunctions import CellularAutomata
+from ProjectFunctions import ResultsAndDiscussions
+import matplotlib.pyplot as plt
+from PIL import Image
 import numpy as np
 import pandas as pd
+import io
 
 st.set_page_config(page_title="CMSC 190", layout="wide")
 with st.sidebar:
@@ -244,7 +248,6 @@ with st.expander("View Details"):
     st.image(chaoticXOR_image, caption="Image before Cellular Automata", use_container_width=True)
   with col2:
     st.image(CA_image, caption="Cellular Automata Image", use_container_width=True)
-  st.info("Are they equal?(checked by: `(CA_image == chaoticXOR_image).all()`): " + str((CA_image == chaoticXOR_image).all()))
 
 st.subheader("Decryption process")
 decrypted_image = CA_image.copy()
@@ -320,6 +323,8 @@ with col2:
 with col3:
   st.image(decrypted_image, caption="Decrypted Image", use_container_width=True)
 
+
+
 st.write("---")
 st.header("Results and Discussions")
 st.subheader("Histogram Analysis")
@@ -330,3 +335,4 @@ with col2:
   plot_single_histogram(CA_image, "Encrypted Image Histogram")
 with col3:
   plot_single_histogram(decrypted_image, "Decrypted Image Histogram")
+

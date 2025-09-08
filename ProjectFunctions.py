@@ -238,3 +238,62 @@ class CellularAutomata:
           binary_pixel = np.binary_repr(image[row, col, channel], width=8)
           image[row, col, channel] = CellularAutomata.applyCATransform(binary_pixel)
     return image
+  
+
+class ResultsAndDiscussions:
+  def E(x, y, image):
+    
+    horizontal = 0
+    horizontal_total = 0
+    vertical = 0
+    vertical_total = 0
+    diagonal = 0
+    diagonal_total = 0
+
+    # horizontal check
+    try:
+      horizontal_total += image[x - 1, y]
+      horizontal += 1
+    except:
+      pass
+    try:
+      horizontal_total += image[x + 1, y]
+      horizontal += 1
+    except:
+      pass
+
+    # vertical check
+    try:
+      vertical_total += image[x, y - 1]
+      vertical += 1
+    except:
+      pass
+    try:
+      vertical_total += image[x, y + 1]
+      vertical += 1
+    except:
+      pass
+
+    # diagonal check
+    try:
+      diagonal_total += image[x - 1, y - 1]
+      diagonal += 1
+    except:
+      pass
+    try:
+      diagonal_total += image[x - 1, y + 1]
+      diagonal += 1
+    except:
+      pass
+    try:
+      diagonal_total += image[x + 1, y - 1]
+      diagonal += 1
+    except:
+      pass
+    try:
+      diagonal_total += image[x + 1, y + 1]
+      diagonal += 1
+    except:
+      pass
+
+    return horizontal_total/horizontal, vertical_total/vertical, diagonal_total/diagonal
