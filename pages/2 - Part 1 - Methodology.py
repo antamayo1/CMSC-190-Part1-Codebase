@@ -5,12 +5,8 @@ from ProjectFunctions import ColorSplit
 from ProjectFunctions import RowColumnTransform
 from ProjectFunctions import ChaoticSequence
 from ProjectFunctions import CellularAutomata
-from ProjectFunctions import ResultsAndDiscussions
-import matplotlib.pyplot as plt
-from PIL import Image
 import numpy as np
 import pandas as pd
-import io
 
 st.set_page_config(page_title="CMSC 190", layout="wide")
 with st.sidebar:
@@ -322,8 +318,6 @@ with col2:
   st.image(CA_image, caption="Encrypted Image", use_container_width=True)
 with col3:
   st.image(decrypted_image, caption="Decrypted Image", use_container_width=True)
-
-
 
 st.write("---")
 st.header("Results and Discussions")
