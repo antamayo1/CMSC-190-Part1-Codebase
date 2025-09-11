@@ -1,4 +1,5 @@
 import numpy as np
+import skimage as ski
 
 class Tools:
   @staticmethod
@@ -43,9 +44,9 @@ class RowColumnTransform:
         green[:, col] = 255 - green[:, col]
 
     # the reverse order of the R channel are inverted
-    for row in range(1, size):
+    for row in range(size):
       if row%2 == 1:
-        red[row, :] = 255 - red[row, :]
+        red[1:row, :] = 255 - red[1:row, :]
 
     # every third column in the B channel is inverted
     for col in range(1, size):
@@ -62,9 +63,9 @@ class RowColumnTransform:
       if col%2 == 1:
         green[:, col] = 255 - green[:, col]
 
-    for row in range(1, size):
+    for row in range(size):
       if row%2 == 1:
-        red[row, :] = 255 - red[row, :]
+        red[1:row, :] = 255 - red[1:row, :] 
 
     for col in range(1, size):
       if (col-1)%3 == 0:
@@ -102,19 +103,19 @@ class RowColumnTransform:
   def reverseStepTwo(red, green, blue):
     size = red.shape[0]
     # Reverse order for proper undoing
-    for col in range(size-1, 0, -1):
+    for col in range(size-1, 1, -1):
       if (col-1)%5 == 0:
         tmp = green[:, col].copy()
         green[:, col] = blue[:, col]
         blue[:, col] = tmp
 
-    for col in range(size-1, 0, -1):
+    for col in range(size-1, 1, -1):
       if (col-1)%3 == 0:
         tmp = red[:, col].copy()
         red[:, col] = blue[:, col]
         blue[:, col] = tmp
 
-    for col in range(size-1, 0, -1):
+    for col in range(size-1, 1, -1):
       tmp = red[:, col].copy()
       red[:, col] = green[:, col]
       green[:, col] = tmp
@@ -124,9 +125,9 @@ class RowColumnTransform:
   @staticmethod
   def stepThree(red, green, blue):
     # Inversion operation for each channel
-    red = 255 - red
-    green = 255 - green
-    blue = 255 - blue
+    red[1:] = 255 - red[1:]
+    green[1:] = 255 - green[1:]
+    blue[1:] = 255 - blue[1:]
     return red, green, blue
   
   @staticmethod
@@ -134,15 +135,15 @@ class RowColumnTransform:
     size = red.shape[0]
 
     # A cyclic shift is performed on each row of the R channel
-    for row in range(size):
+    for row in range(1, size):
       red[row, :] = np.roll(red[row, :], row)
 
     # A cyclic shift is performed on every three rows of the B channel
-    for row in range(0, size, 3):
+    for row in range(1, size, 3):
       blue[row, :] = np.roll(blue[row, :], row)
 
     # A cyclic shift is performed on every five rows of the G channel
-    for row in range(0, size, 5):
+    for row in range(1, size, 5):
       green[row, :] = np.roll(green[row, :], row)
 
     return red, green, blue
@@ -151,16 +152,17 @@ class RowColumnTransform:
   def reverseStepFour(red, green, blue):
     size = red.shape[0]
 
-    for row in range(size):
+    for row in range(1, size):
       red[row, :] = np.roll(red[row, :], -row)
 
-    for row in range(0, size, 3):
+    for row in range(1, size, 3):
       blue[row, :] = np.roll(blue[row, :], -row)
 
-    for row in range(0, size, 5):
+    for row in range(1, size, 5):
       green[row, :] = np.roll(green[row, :], -row)
 
     return red, green, blue
+
 class ChaoticSequence:
 
   def XOR_images(imageA, imageB):
@@ -190,7 +192,7 @@ class ChaoticSequence:
     chaoticImage = (chaoticImage*255).astype(np.uint8)
     return chaoticImage
 
-  def getChaoticImage(map_type, length, size):
+  def getSequenceOnly(map_type, length):
     sequence = []
     initial_r_value = 0.4
     for _ in range(length):
@@ -201,8 +203,21 @@ class ChaoticSequence:
       else:
         initial_r_value = ChaoticSequence.get_Next_LSCM(initial_r_value)
       sequence.append(initial_r_value)
+    return sequence
+
+  def getChaoticImage(map_type, length, size):
+    sequence = []
+    initial_r_value = 0.63
+    for _ in range(length):
+      if map_type == "LCM":
+        initial_r_value = ChaoticSequence.getNext_LCM(initial_r_value)
+      elif map_type == "SCM":
+        initial_r_value = ChaoticSequence.getNext_SCM(initial_r_value)
+      else:
+        initial_r_value = ChaoticSequence.get_Next_LSCM(initial_r_value)
+      sequence.append(initial_r_value)
     return ChaoticSequence.getSequenceAsImage(sequence, size)
-  
+
 class CellularAutomata:
   def applyXOR(pixel):
     new_pixel = pixel
@@ -218,11 +233,13 @@ class CellularAutomata:
     new_pixel = pixel
     new_pixel = list(new_pixel)
     for idx in range(4, 8):
-      new_pixel[idx] = str(1 - int(pixel[idx]))
+      if pixel[idx] == '0':
+        new_pixel[idx] = '1'
+      else:
+        new_pixel[idx] = '0'
     return ''.join(new_pixel)
 
   def applyCATransform(pixel):
-    
     old_pixel = pixel
     for idx in range(4):
       XOR_pixel = CellularAutomata.applyXOR(old_pixel)
@@ -238,62 +255,49 @@ class CellularAutomata:
           binary_pixel = np.binary_repr(image[row, col, channel], width=8)
           image[row, col, channel] = CellularAutomata.applyCATransform(binary_pixel)
     return image
-  
 
 class ResultsAndDiscussions:
-  def E(x, y, image):
-    
-    horizontal = 0
-    horizontal_total = 0
-    vertical = 0
-    vertical_total = 0
-    diagonal = 0
-    diagonal_total = 0
+  def calculateEntropy(image):
+    grayscale = ski.color.rgb2gray(image)
+    histogram, _ = np.histogram(grayscale, bins=315, range=(0, 1))
+    histogram = histogram / np.sum(histogram)
+    entropy = 0
+    for x in histogram:
+      if x > 0:
+        entropy += x * np.log2(x)
+    return -entropy
+  
+  def getHorizontalPairs(image):
+    pairs = []
+    for row in range(image.shape[0]):
+      for col in range(image.shape[1]-1):
+        pairs.append([image[row, col], image[row, col+1]])
+    return np.array(pairs)
 
-    # horizontal check
-    try:
-      horizontal_total += image[x - 1, y]
-      horizontal += 1
-    except:
-      pass
-    try:
-      horizontal_total += image[x + 1, y]
-      horizontal += 1
-    except:
-      pass
+  def getVerticalPairs(image):
+    pairs = []
+    for col in range(image.shape[1]):
+      for row in range(image.shape[0]-1):
+        pairs.append([image[row, col], image[row+1, col]])
+    return np.array(pairs)
+  
+  def getDiagonalPairs(image):
+    pairs = []
+    for row in range(image.shape[0]-1):
+      for col in range(image.shape[1]-1):
+        pairs.append([image[row, col], image[row+1, col+1]])
+    return np.array(pairs)
+  
+  def E(x):
+    return np.mean(x)
+  
+  def D(x):
+    return np.var(x)
+  
+  def cov(x, y):
+    x_mean = ResultsAndDiscussions.E(x)
+    y_mean = ResultsAndDiscussions.E(y)
+    return np.mean((x - x_mean) * (y - y_mean))
 
-    # vertical check
-    try:
-      vertical_total += image[x, y - 1]
-      vertical += 1
-    except:
-      pass
-    try:
-      vertical_total += image[x, y + 1]
-      vertical += 1
-    except:
-      pass
-
-    # diagonal check
-    try:
-      diagonal_total += image[x - 1, y - 1]
-      diagonal += 1
-    except:
-      pass
-    try:
-      diagonal_total += image[x - 1, y + 1]
-      diagonal += 1
-    except:
-      pass
-    try:
-      diagonal_total += image[x + 1, y - 1]
-      diagonal += 1
-    except:
-      pass
-    try:
-      diagonal_total += image[x + 1, y + 1]
-      diagonal += 1
-    except:
-      pass
-
-    return horizontal_total/horizontal, vertical_total/vertical, diagonal_total/diagonal
+  def r(x, y):
+    return ResultsAndDiscussions.cov(x, y)/(np.sqrt(ResultsAndDiscussions.D(x)) * np.sqrt(ResultsAndDiscussions.D(y)))
