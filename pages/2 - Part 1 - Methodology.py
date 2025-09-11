@@ -8,7 +8,6 @@ from ProjectFunctions import CellularAutomata
 from ProjectFunctions import ResultsAndDiscussions
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="CMSC 190", layout="wide")
 with st.sidebar:
