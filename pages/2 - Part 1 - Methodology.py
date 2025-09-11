@@ -717,7 +717,8 @@ st.info("As it is evident in the scatter plots above for the encrypted image, th
 st.write('We find the correlation values $r_{x,y}$ with this pairs using the following formulas:')
 column1, column2, column3, column4 = st.columns(4)
 with column1:
-  st.latex(r'''def r(x, y):
+  st.latex(r'''r_{x,y} = \frac{cov(x,y)}{\sqrt{D(x)} \times \sqrt{D(y)}}''')
+  st.code('''def r(x, y):
   return ResultsAndDiscussions.cov(x, y)/(np.sqrt(ResultsAndDiscussions.D(x)) * np.sqrt(ResultsAndDiscussions.D(y)))''')
 with column2:
   st.latex(r'''cov(x,y) = \frac{1}{N} \sum_{i=1}^{N} (x_i - E(x))(y_i - E(y))''')
